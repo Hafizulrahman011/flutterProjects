@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:weather/weather.dart';
-import 'package:weatherapp/const.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as dot_env; // Changed import prefix name
 import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key); // Fixed the key parameter
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final WeatherFactory wf = WeatherFactory(apiKey); 
+  late final WeatherFactory wf; // Declaring late
   Weather? weather;
 
-   @override
+  @override
   void initState() {
     super.initState();
-    wf.currentWeatherByCityName("Sepang").then((w) {
+    // Initialize WeatherFactory with API key from environment
+    wf = WeatherFactory(dot_env.dotenv.env['API_KEY']!); // Accessing API key from environment
+    wf.currentWeatherByCityName("Ipoh").then((w) {
       setState(() {
         weather = w;
       });
@@ -31,6 +33,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+//function for ui
   Widget _buildUI() {
     if (weather == null) {
       return const Center(
@@ -38,45 +41,42 @@ class _HomePageState extends State<HomePage> {
       );
     }
     return SizedBox(
-      width: MediaQuery.sizeOf(context).width,
-      height: MediaQuery.sizeOf(context).height,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           locationHeader(),
           SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.08,
+            height: MediaQuery.of(context).size.height * 0.08,
           ),
           dateTimeInfo(),
           SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.05,
+            height: MediaQuery.of(context).size.height * 0.05,
           ),
           weatherIcon(),
           SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.05,
+            height: MediaQuery.of(context).size.height * 0.05,
           ),
           currentTemp(),
           SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.05,
+            height: MediaQuery.of(context).size.height * 0.05,
           ),
           extraInfo(),
         ],
       ),
     );
   }
-
-  //function for returning place name
+//function for getting location
   Widget locationHeader() {
     return Text(
       weather?.areaName ?? "",
       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     );
   }
-
-  //function for returning date
+//function to get info
   Widget dateTimeInfo() {
     DateTime now = weather!.date!;
-    //att for time
     return Column(
       children: [
         Text(
@@ -88,7 +88,6 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(
           height: 10,
         ),
-        //att for days
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -98,7 +97,6 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            //att for date
             Text(
               "  ${DateFormat("d.M.y").format(now)}",
               style: const TextStyle(
@@ -110,8 +108,7 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-
-  //function for icons
+//function to get weather icons
   Widget weatherIcon() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -119,7 +116,7 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          height: MediaQuery.sizeOf(context).height * 0.20,
+          height: MediaQuery.of(context).size.height * 0.20,
           decoration: BoxDecoration(
             image: DecorationImage(
               image: NetworkImage(
@@ -137,8 +134,7 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-
-  //function for returning temp
+//function to get current temp
   Widget currentTemp() {
     return Text(
       "${weather?.temperature?.celsius?.toStringAsFixed(0)}°C",
@@ -149,25 +145,21 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  //function for displaying extrainfo
+//function for displaying extra info
   Widget extraInfo() {
     return Container(
-      height: MediaQuery.sizeOf(context).height * 0.15,
-      width: MediaQuery.sizeOf(context).width * 0.80,
+      height: MediaQuery.of(context).size.height * 0.15,
+      width: MediaQuery.of(context).size.width * 0.80,
       decoration: BoxDecoration(
         color: Colors.blueAccent,
         borderRadius: BorderRadius.circular(15),
       ),
       padding: const EdgeInsets.all(8.0),
 
-      //extra info
-
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          //code for min and max temp
           Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -180,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 15,
                 ),
               ),
-               Text(
+              Text(
                 "Min : ${weather?.tempMin?.celsius?.toStringAsFixed(0)}°C",
                 style: const TextStyle(
                   color: Colors.white,
@@ -189,8 +181,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-            //code for wind speed and humidity
-            Row(
+          Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -202,8 +193,8 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 15,
                 ),
               ),
-               Text(
-                "Humidity : ${weather?.tempMin?.celsius?.toStringAsFixed(0)}%",
+              Text(
+                "Humidity : ${weather?.humidity}%",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
